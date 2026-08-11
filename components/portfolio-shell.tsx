@@ -749,6 +749,12 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
                   <span>{post.reactions ?? post.impressions ?? 0} reactions</span>
                   <span>{post.comments ?? 0} comments</span>
                 </div>
+                {post.link ? (
+                  <a href={post.link} target="_blank" rel="noreferrer" className="social-button social-button-light mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-black">
+                    <LinkedInIcon className="h-3.5 w-3.5" />
+                    View post
+                  </a>
+                ) : null}
               </article>
             ))}
           </div>
