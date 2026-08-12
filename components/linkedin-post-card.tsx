@@ -5,8 +5,6 @@ import Image from "next/image";
 import { LinkedInIcon } from "@/components/portfolio-shell";
 import type { LinkedInPost } from "@/data/linkedin-import";
 
-type Corner = "left" | "right";
-
 function CalendarBadge({ date }: { date: string }) {
   const parsed = new Date(date);
   const month = parsed.toLocaleString("en-US", { month: "short" }).toUpperCase();
@@ -22,7 +20,13 @@ function CalendarBadge({ date }: { date: string }) {
   );
 }
 
-function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: string[]; alt: string; corner?: Corner }) {
+function FerrisWheelSlideshow({
+  images,
+  alt,
+}: {
+  images: string[];
+  alt: string;
+}) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -44,7 +48,6 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
       timerRef.current = null;
       return;
     }
-
     timerRef.current = setInterval(advance, 4000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -55,24 +58,19 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
   const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.touches[0].clientX;
   };
-
   const handleTouchMove = (e: React.TouchEvent) => {
     touchEndX.current = e.touches[0].clientX;
   };
-
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
     if (Math.abs(diff) > 50) {
-      if (diff > 0) advance();
-      else retreat();
+      diff > 0 ? advance() : retreat();
     }
     touchStartX.current = 0;
     touchEndX.current = 0;
   };
 
-  if (count === 0) {
-    return null;
-  }
+  if (count === 0) return null;
 
   if (count === 1) {
     return (
@@ -82,39 +80,46 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
     );
   }
 
-  const isRight = corner === "right";
-
   const getCardStyle = (index: number): React.CSSProperties => {
     const offset = index - currentIndex;
-    const normalizedOffset = offset === 0 ? 0 : offset > 0 ? (offset === 1 ? 1 : 2) : (offset === -1 ? -1 : -2);
+    const n =
+      offset === 0
+        ? 0
+        : offset > 0
+          ? offset === 1
+            ? 1
+            : 2
+          : offset === -1
+            ? -1
+            : -2;
 
-    if (normalizedOffset === 0) {
+    if (n === 0) {
       return {
-        transform: `translateX(0) translateY(0) scale(1) rotate(${isRight ? -6 : 6}deg)`,
+        transform: "translateX(0) translateY(0) scale(1) rotate(0deg)",
         zIndex: 3,
         opacity: 1,
         filter: "brightness(1)",
-        boxShadow: "0 18px 38px rgba(18,18,18,0.18)",
+        boxShadow: "0 14px 32px rgba(18,18,18,0.14)",
       };
-    } else if (normalizedOffset === 1 || (currentIndex === count - 1 && index === 0)) {
+    } else if (n === 1 || (currentIndex === count - 1 && index === 0)) {
       return {
-        transform: `translateX(${isRight ? 50 : -50}%) translateY(-40%) scale(0.72) rotate(${isRight ? 6 : -6}deg)`,
+        transform: "translateX(28%) translateY(-32%) scale(0.68) rotate(4deg)",
         zIndex: 2,
-        opacity: 0.7,
-        filter: "brightness(0.92)",
-        boxShadow: "0 10px 22px rgba(18,18,18,0.1)",
+        opacity: 0.65,
+        filter: "brightness(0.9)",
+        boxShadow: "0 8px 18px rgba(18,18,18,0.08)",
       };
-    } else if (normalizedOffset === -1 || (currentIndex === 0 && index === count - 1)) {
+    } else if (n === -1 || (currentIndex === 0 && index === count - 1)) {
       return {
-        transform: `translateX(${isRight ? -35 : 35}%) translateY(25%) scale(0.68) rotate(${isRight ? -10 : 10}deg)`,
-        zIndex: 1,
-        opacity: 0.45,
-        filter: "brightness(0.88)",
-        boxShadow: "0 6px 14px rgba(18,18,18,0.06)",
+        transform: "translateX(-28%) translateY(32%) scale(0.68) rotate(-4deg)",
+        zIndex: 2,
+        opacity: 0.65,
+        filter: "brightness(0.9)",
+        boxShadow: "0 8px 18px rgba(18,18,18,0.08)",
       };
     } else {
       return {
-        transform: `translateX(0) translateY(0) scale(0.55) rotate(0deg)`,
+        transform: "translateX(0) translateY(0) scale(0.5) rotate(0deg)",
         zIndex: 0,
         opacity: 0,
         filter: "brightness(0.8)",
@@ -125,14 +130,14 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
 
   return (
     <div
-      className="relative h-64 w-full overflow-visible"
+      className="relative h-52 w-full overflow-hidden"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className={`absolute ${isRight ? "bottom-6 right-6" : "bottom-6 left-6"} w-40 h-52`}>
+      <div className="relative mx-auto h-full w-full max-w-[200px]">
         {images.map((src, i) => {
           const style = getCardStyle(i);
           return (
@@ -149,13 +154,13 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
                 pointerEvents: "none",
               }}
             >
-              <div className="relative h-40 w-28 overflow-hidden rounded-lg border border-black/10 bg-white">
+              <div className="relative h-[120px] w-[88px] overflow-hidden rounded border border-black/10 bg-white">
                 <Image
                   src={src}
                   alt={`${alt} - image ${i + 1}`}
                   fill
                   className="object-cover"
-                  sizes="160px"
+                  sizes="120px"
                   loading="lazy"
                 />
               </div>
@@ -170,7 +175,7 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
             type="button"
             onClick={retreat}
             aria-label="Previous image"
-            className={`absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-black/10 bg-white/90 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#d3b33f] ${isRight ? "left-3" : "right-3"}`}
+            className="absolute top-1/2 left-2 z-10 -translate-y-1/2 rounded-full border border-black/10 bg-white/90 px-2 py-1.5 text-[10px] font-semibold text-black shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#d3b33f]"
           >
             ‹
           </button>
@@ -178,7 +183,7 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
             type="button"
             onClick={advance}
             aria-label="Next image"
-            className={`absolute top-1/2 z-10 -translate-y-1/2 rounded-full border border-black/10 bg-white/90 px-2.5 py-1.5 text-[10px] font-semibold uppercase tracking-[0.16em] text-black shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#d3b33f] ${isRight ? "right-3" : "left-3"}`}
+            className="absolute top-1/2 right-2 z-10 -translate-y-1/2 rounded-full border border-black/10 bg-white/90 px-2 py-1.5 text-[10px] font-semibold text-black shadow-sm transition hover:bg-white focus:outline-none focus:ring-2 focus:ring-[#d3b33f]"
           >
             ›
           </button>
@@ -186,14 +191,14 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
       )}
 
       {count > 2 && (
-        <div className={`absolute bottom-3 z-10 flex gap-1.5 ${isRight ? "left-3" : "right-3"}`}>
+        <div className="absolute bottom-2 left-1/2 z-10 flex -translate-x-1/2 gap-1.5">
           {images.map((_, i) => (
             <button
               key={i}
               type="button"
               onClick={() => setCurrentIndex(i)}
               aria-label={`Go to image ${i + 1}`}
-              className={`h-1.5 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#d3b33f] ${
+              className={`h-1 rounded-full transition-all focus:outline-none focus:ring-2 focus:ring-[#d3b33f] ${
                 i === currentIndex ? "w-4 bg-[#121212]" : "w-2 bg-black/25 hover:bg-black/45"
               }`}
             />
@@ -204,13 +209,24 @@ function FerrisWheelSlideshow({ images, alt, corner = "right" }: { images: strin
   );
 }
 
-export function LinkedInPostCard({ post, corner = "right" as Corner }: { post: LinkedInPost; corner?: Corner }) {
+export function LinkedInPostCard({
+  post,
+  index,
+  onHover,
+}: {
+  post: LinkedInPost;
+  index: number;
+  onHover?: () => void;
+}) {
   const [isExpanded, setIsExpanded] = useState(false);
   const hasImages = post.images && post.images.length > 0;
   const needsTruncation = post.text.length > 140;
 
   return (
-    <article className="reveal-card rounded-lg border border-black/8 bg-white p-5 md:p-6">
+    <article
+      className="group relative rounded-lg border border-black/8 bg-white p-5 md:p-6 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-black/15 hover:shadow-[0_8px_24px_rgba(18,18,18,0.07)]"
+      onMouseEnter={onHover}
+    >
       <div className="flex items-center gap-3">
         <CalendarBadge date={post.date} />
         <div className="flex-1">
@@ -239,13 +255,16 @@ export function LinkedInPostCard({ post, corner = "right" as Corner }: { post: L
 
       {hasImages && (
         <div className="mt-4">
-          <FerrisWheelSlideshow images={post.images} alt={post.imageAlt} corner={corner} />
+          <FerrisWheelSlideshow images={post.images} alt={post.imageAlt} />
         </div>
       )}
 
       <div className="mt-4 flex flex-wrap gap-2">
         {post.hashtags.slice(0, 5).map((tag) => (
-          <span key={tag} className="rounded-full border border-black/10 bg-[#f7f3eb] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.16em] text-black/60">
+          <span
+            key={tag}
+            className="rounded-full border border-black/10 bg-[#f7f3eb] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.16em] text-black/60"
+          >
             {tag}
           </span>
         ))}

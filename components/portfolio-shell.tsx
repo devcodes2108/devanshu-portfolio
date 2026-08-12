@@ -16,6 +16,7 @@ import {
   socialLinks,
 } from "@/data/portfolio";
 import type { GitHubRepoSummary } from "@/lib/github";
+import type { LinkedInPost } from "@/data/linkedin-import";
 
 function InteractiveDotField() {
   const fieldRef = useRef<HTMLDivElement>(null);
@@ -224,6 +225,140 @@ function getProjectDescription(repo: GitHubRepoSummary) {
   if (repo.topics.length > 0) return `Public GitHub project focused on ${repo.topics.slice(0, 3).join(", ")}.`;
   if (repo.language) return `Public ${repo.language} repository. Add a GitHub repo description to show a custom summary here.`;
   return "Public GitHub repository. Add a GitHub repo description to show a custom summary here.";
+}
+
+function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [lineProgress, setLineProgress] = useState(0);
+  const animationRef = useRef<number>(0);
+  const targetProgressRef = useRef(0);
+
+  useEffect(() => {
+    let start: number | null = null;
+    const duration = 700;
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const current = lineProgress;
+      const target = targetProgressRef.current;
+      const diff = target - current;
+      if (Math.abs(diff) < 0.005) {
+        setLineProgress(target);
+        animationRef.current = 0;
+        return;
+      }
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setLineProgress(current + diff * eased * 0.18);
+      animationRef.current = requestAnimationFrame(animate);
+    };
+    animationRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (animationRef.current) cancelAnimationFrame(animationRef.current);
+    };
+  }, [lineProgress]);
+
+  const handleCardHover = (index: number) => {
+    setHoveredIndex(index);
+    targetProgressRef.current = posts.length <= 1 ? 1 : index / (posts.length - 1);
+  };
+
+  const handleCardLeave = () => {
+    setHoveredIndex(null);
+    targetProgressRef.current = 1;
+  };
+
+  const totalCards = posts.length;
+  const viewBoxHeight = Math.max(totalCards * 240 + 100, 400);
+
+  return (
+    <section className="relative py-16 md:py-24">
+      <svg
+        className="pointer-events-none absolute inset-0 h-full w-full"
+        viewBox={`0 0 40 ${viewBoxHeight}`}
+        preserveAspectRatio="xMidYMid slice"
+        aria-hidden="true"
+      >
+        <defs>
+          <linearGradient id="timeline-gold" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#d3b33f" stopOpacity="0.12" />
+            <stop offset="50%" stopColor="#d3b33f" stopOpacity="0.65" />
+            <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.12" />
+          </linearGradient>
+          <filter id="glow-sm">
+            <feGaussianBlur stdDeviation="1.8" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
+        <line x1="38" y1="0" x2="38" y2={viewBoxHeight} stroke="url(#timeline-gold)" strokeWidth="0.6" />
+
+        <line
+          x1="38"
+          y1="0"
+          x2="38"
+          y2={lineProgress * viewBoxHeight}
+          stroke="#d3b33f"
+          strokeWidth="0.6"
+          strokeDasharray="2 3"
+          opacity="0.5"
+        />
+
+        {hoveredIndex !== null && (
+          <line
+            x1="38"
+            y1="0"
+            x2="38"
+            y2={lineProgress * viewBoxHeight}
+            stroke="#d3b33f"
+            strokeWidth="1.4"
+            opacity="0.2"
+          />
+        )}
+
+        {posts.map((_, i) => {
+          const y = 80 + i * 240;
+          return (
+            <g key={i}>
+              <circle cx="38" cy={y} r="3.5" fill="#f7f3eb" stroke="#d3b33f" strokeWidth="0.8" />
+              {hoveredIndex === i && (
+                <circle cx="38" cy={y} r="4.5" fill="#d3b33f" filter="url(#glow-sm)">
+                  <animate attributeName="r" values="4.5;7;4.5" dur="1.2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="1;0.5;1" dur="1.2s" repeatCount="indefinite" />
+                </circle>
+              )}
+            </g>
+          );
+        })}
+
+        <circle
+          cx="38"
+          cy={lineProgress * viewBoxHeight}
+          r="4.5"
+          fill="#d3b33f"
+          filter="url(#glow-sm)"
+        >
+          <animate attributeName="r" values="4;6.5;4" dur="2s" repeatCount="indefinite" />
+        </circle>
+      </svg>
+
+      <div className="relative space-y-5 md:space-y-6">
+        {posts.map((post, index) => (
+          <div
+            key={post.id}
+            className="md:ml-[8%] md:mr-[12%]"
+            onMouseEnter={() => handleCardHover(index)}
+            onMouseLeave={handleCardLeave}
+          >
+            <LinkedInPostCard post={post} index={index} />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
 }
 
 export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary[] }) {
@@ -553,21 +688,13 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
           </div>
         </section>
 
-        <section id="posts" className="reveal-section border-t border-black/5 py-20">
-          <div className="mb-10 max-w-xl reveal-copy">
+        <section id="posts" className="reveal-section border-t border-black/5">
+          <div className="mb-10 max-w-xl px-6 md:mx-auto md:px-0 reveal-copy">
             <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">From my LinkedIn</p>
             <h2 className="title-shimmer mt-4 text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Ideas, builds and thoughts.</h2>
           </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            {linkedInPosts.map((post, index) => (
-              <div key={post.id} className={index % 2 === 1 ? "lg:mt-12" : ""}>
-                <LinkedInPostCard post={post} corner={index % 2 === 0 ? "right" : "left"} />
-              </div>
-            ))}
-          </div>
+          <TimelinePostsSection posts={linkedInPosts} />
         </section>
-
         <section id="skills" className="reveal-section border-t border-black/5 py-20">
           <div className="mb-10 max-w-xl reveal-copy">
             <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">Capabilities</p>
