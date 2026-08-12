@@ -80,6 +80,21 @@ function FerrisWheelSlideshow({
     );
   }
 
+  const getState = (index: number) => {
+    const diff = index - currentIndex;
+    const normalized = diff === 0 ? 0 : diff > 0 ? (diff === 1 ? 1 : 2) : (diff === -1 ? -1 : -2);
+
+    if (normalized === 0) {
+      return { opacity: 1, x: 0, rotate: 0, scale: 1, z: 2 };
+    } else if (normalized === 1 || (currentIndex === count - 1 && index === 0)) {
+      return { opacity: 0, x: 105, rotate: 18, scale: 0.85, z: 1 };
+    } else if (normalized === -1 || (currentIndex === 0 && index === count - 1)) {
+      return { opacity: 0, x: -105, rotate: -18, scale: 0.85, z: 1 };
+    } else {
+      return { opacity: 0, x: 0, rotate: 0, scale: 0.8, z: 0 };
+    }
+  };
+
   return (
     <div
       className="relative h-40 w-full overflow-hidden"
@@ -89,27 +104,30 @@ function FerrisWheelSlideshow({
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="flex h-full w-full items-center justify-center gap-3">
+      <div className="relative h-full w-full">
         {images.map((src, i) => {
-          const isActive = i === currentIndex;
+          const state = getState(i);
           return (
             <div
               key={i}
-              className="relative h-28 w-24 flex-shrink-0 overflow-hidden rounded border border-black/10 bg-white transition-all duration-500 ease-out md:h-32 md:w-28"
+              className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out"
               style={{
-                opacity: isActive ? 1 : 0.45,
-                transform: isActive ? "scale(1)" : "scale(0.92)",
-                zIndex: isActive ? 2 : 1,
+                opacity: state.opacity,
+                transform: `translateX(${state.x}%) rotate(${state.rotate}deg) scale(${state.scale})`,
+                zIndex: state.z,
+                willChange: "transform, opacity",
               }}
             >
-              <Image
-                src={src}
-                alt={`${alt} - image ${i + 1}`}
-                fill
-                className="object-contain"
-                sizes="160px"
-                loading="lazy"
-              />
+              <div className="relative h-28 w-24 overflow-hidden rounded border border-black/10 bg-white md:h-32 md:w-28">
+                <Image
+                  src={src}
+                  alt={`${alt} - image ${i + 1}`}
+                  fill
+                  className="object-contain"
+                  sizes="160px"
+                  loading="lazy"
+                />
+              </div>
             </div>
           );
         })}

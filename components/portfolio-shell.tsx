@@ -230,6 +230,8 @@ function getProjectDescription(repo: GitHubRepoSummary) {
 function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
   const sectionRef = useRef<HTMLElement>(null);
   const [lineProgress, setLineProgress] = useState(0);
+  const pathRef = useRef<SVGPathElement>(null);
+  const [pathLength, setPathLength] = useState(1000);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -257,14 +259,37 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
     return () => window.removeEventListener("scroll", updateLine);
   }, []);
 
+  useEffect(() => {
+    if (pathRef.current) {
+      setPathLength(pathRef.current.getTotalLength());
+    }
+  }, [posts.length]);
+
   const totalCards = posts.length;
+  const nodeSpacing = 240;
+  const viewBoxHeight = Math.max(totalCards * nodeSpacing + 100, 400);
+
+  const generateZigzagPath = () => {
+    const parts = [`M 16 0`];
+    for (let i = 0; i < totalCards; i++) {
+      const nodeY = 80 + i * nodeSpacing;
+      const nextY = i < totalCards - 1 ? 80 + (i + 1) * nodeSpacing : viewBoxHeight;
+      const midY = (nodeY + nextY) / 2;
+      const cpX = i % 2 === 0 ? 50 : -18;
+      parts.push(`Q ${cpX} ${midY} 16 ${nextY}`);
+    }
+    return parts.join(" ");
+  };
+
+  const zigzagPath = generateZigzagPath();
+  const dashOffset = pathLength * (1 - lineProgress);
 
   return (
     <section ref={sectionRef} className="relative py-12 md:py-20">
       <div className="relative">
         <svg
           className="pointer-events-none absolute left-3 top-0 h-full w-6 md:left-5 md:w-8"
-          viewBox="0 0 32 1000"
+          viewBox={`0 0 32 ${viewBoxHeight}`}
           preserveAspectRatio="none"
           aria-hidden="true"
         >
@@ -275,20 +300,21 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
               <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.1" />
             </linearGradient>
           </defs>
-          <line x1="16" y1="0" x2="16" y2="1000" stroke="url(#timeline-gold)" strokeWidth="1.5" />
-          <line
-            x1="16"
-            y1="0"
-            x2="16"
-            y2={lineProgress * 1000}
+
+          <path ref={pathRef} d={zigzagPath} stroke="url(#timeline-gold)" strokeWidth="1.5" fill="none" />
+
+          <path
+            d={zigzagPath}
             stroke="#d3b33f"
             strokeWidth="2"
-            strokeDasharray="4 4"
+            strokeDasharray={pathLength}
+            strokeDashoffset={dashOffset}
+            fill="none"
             opacity="0.6"
           />
         </svg>
 
-        <div className="space-y-6 md:space-y-8">
+        <div className="space-y-4 md:space-y-6">
           {posts.map((post, index) => {
             const isLeft = index % 2 === 0;
             return (
@@ -309,6 +335,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
     </section>
   );
 }
+
 export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary[] }) {
   const [activeSection, setActiveSection] = useState("home");
   const [isMenuOpen, setIsMenuOpen] = useState(false);
