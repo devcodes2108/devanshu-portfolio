@@ -254,7 +254,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
         const scrolled = viewportHeight - sectionTop;
         const total = sectionHeight + viewportHeight;
         const rawProgress = Math.min(1, Math.max(0, scrolled / total));
-        const delay = 0.05;
+        const delay = 0.0;
         const adjustedProgress = Math.min(1, Math.max(0, (rawProgress - delay) / (1 - delay)));
         setLineProgress(adjustedProgress);
         const newActiveIndex = Math.min(
