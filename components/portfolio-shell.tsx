@@ -560,8 +560,10 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
           </div>
 
           <div className="grid gap-5 lg:grid-cols-2">
-            {linkedInPosts.map((post) => (
-              <LinkedInPostCard key={post.id} post={post} />
+            {linkedInPosts.map((post, index) => (
+              <div key={post.id} className={index % 2 === 1 ? "lg:mt-12" : ""}>
+                <LinkedInPostCard post={post} corner={index % 2 === 0 ? "right" : "left"} />
+              </div>
             ))}
           </div>
         </section>
