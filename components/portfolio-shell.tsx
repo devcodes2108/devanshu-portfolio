@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Hero3DScene } from "@/components/hero-3d-scene";
 import { LinkedInPostCard } from "@/components/linkedin-post-card";
 import { normalizeLinkedInPosts } from "@/lib/linkedin";
 import {
@@ -375,7 +374,56 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
   const [experienceLineProgress, setExperienceLineProgress] = useState(0);
+  const heroRef = useRef<HTMLElement>(null);
   const { posts: linkedInPosts } = normalizeLinkedInPosts();
+
+  useEffect(() => {
+    const hero = heroRef.current;
+    if (!hero) return;
+
+    const updateHeroState = () => {
+      const scrollY = window.scrollY;
+      const viewportHeight = window.innerHeight;
+      const heroHeight = hero.offsetHeight;
+      const maxScroll = viewportHeight * 0.45;
+
+      if (scrollY >= maxScroll) {
+        hero.classList.add("is-hero-hidden");
+        hero.querySelector(".hero-photo-stack")?.classList.add("is-papers-merged");
+      } else if (scrollY <= 0) {
+        hero.classList.remove("is-hero-hidden");
+        hero.querySelector(".hero-photo-stack")?.classList.remove("is-papers-merged");
+      } else {
+        const progress = Math.min(1, Math.max(0, scrollY / maxScroll));
+        hero.style.opacity = (1 - progress * 0.35).toFixed(3);
+        hero.style.transform = `translate3d(0, ${-progress * 30}px, 0) scale(${1 - progress * 0.02})`;
+
+        const photoStack = hero.querySelector(".hero-photo-stack");
+        if (photoStack) {
+          const backLayer = photoStack.querySelector(".hero-paper-layer--back");
+          const midLayer = photoStack.querySelector(".hero-paper-layer--mid");
+          const frontLayer = photoStack.querySelector(".hero-paper-layer--front");
+
+          if (backLayer && midLayer && frontLayer) {
+            const backOpacity = Math.max(0, 0.55 - progress * 0.55);
+            const midOpacity = Math.max(0, 0.75 - progress * 0.75);
+            const frontOpacity = Math.min(1, 0.9 + progress * 0.1);
+
+            (backLayer as HTMLElement).style.opacity = backOpacity.toFixed(3);
+            (backLayer as HTMLElement).style.transform = `translate3d(${18 - progress * 18}px, ${22 - progress * 22}px, 0) rotate(${4 - progress * 4}deg)`;
+            (midLayer as HTMLElement).style.opacity = midOpacity.toFixed(3);
+            (midLayer as HTMLElement).style.transform = `translate3d(${9 - progress * 9}px, ${11 - progress * 11}px, 0) rotate(${2 - progress * 2}deg)`;
+            (frontLayer as HTMLElement).style.opacity = frontOpacity.toFixed(3);
+            (frontLayer as HTMLElement).style.transform = `translate3d(${-3 + progress * 3}px, ${-4 + progress * 4}px, 0) rotate(${-1 + progress * 1}deg)`;
+          }
+        }
+      }
+    };
+
+    updateHeroState();
+    window.addEventListener("scroll", updateHeroState, { passive: true });
+    return () => window.removeEventListener("scroll", updateHeroState);
+  }, []);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -533,7 +581,7 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
       </header>
 
       <main id="home" className="relative z-10 mx-auto max-w-6xl px-6 pb-16 pt-10 lg:px-10">
-        <section className="reveal-section grid items-center gap-10 pb-20 pt-8 md:min-h-[80vh] md:grid-cols-[1.2fr_0.8fr] md:pt-16">
+        <section ref={heroRef} className="hero-opening reveal-section grid items-center gap-10 pb-20 pt-8 md:min-h-[80vh] md:grid-cols-[1.1fr_0.9fr] md:pt-16">
           <div className="space-y-8 reveal-copy">
             <div className="flex items-center gap-3 text-[10px] font-medium uppercase tracking-[0.28em] text-black/60">
               <span className="inline-block h-px w-10 bg-[#d3b33f]" />
@@ -550,10 +598,10 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
                 </span>
               </h1>
 
-              <p className="max-w-xl text-lg leading-8 text-black/70 md:text-xl">{profile.headline}</p>
-            </div>
+              <p className="hero-text max-w-xl text-lg leading-8 text-black/70 md:text-xl">{profile.headline}</p>
 
-            <p className="max-w-lg text-base leading-7 text-black/65">{profile.introduction}</p>
+              <p className="hero-text max-w-lg text-base leading-7 text-black/65">{profile.introduction}</p>
+            </div>
 
             <div className="flex flex-col gap-4 sm:flex-row">
               <a
@@ -583,17 +631,12 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
             </div>
           </div>
 
-          <div className="relative flex items-center justify-center reveal-copy">
-            <div className="hero-scene" style={{ ["--hero-scroll" as string]: scrollProgress.toFixed(3) }}>
-              <div className="hero-3d-backdrop" aria-hidden="true">
-                <Hero3DScene scrollProgress={scrollProgress} />
-              </div>
-
-              <div className="hero-frame">
-                <Image src={profile.photo ?? "/publicprofile.jpg"} alt={profile.name} width={900} height={1200} priority className="h-full w-full object-cover" />
-              </div>
-
-              <div className="hero-accent-lines" />
+          <div className="hero-photo-stack relative flex items-center justify-center reveal-copy">
+            <div className="hero-paper-layer hero-paper-layer--back" aria-hidden="true" />
+            <div className="hero-paper-layer hero-paper-layer--mid" aria-hidden="true" />
+            <div className="hero-paper-layer hero-paper-layer--front" aria-hidden="true" />
+            <div className="hero-photo-frame">
+              <Image src={profile.photo ?? "/publicprofile.jpg"} alt={profile.name} width={900} height={1200} priority className="h-full w-full object-cover" />
             </div>
           </div>
         </section>
