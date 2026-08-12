@@ -254,7 +254,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
         const scrolled = viewportHeight - sectionTop;
         const total = sectionHeight + viewportHeight;
         const rawProgress = Math.min(1, Math.max(0, scrolled / total));
-        const delay = 0.12;
+        const delay = 0.05;
         const adjustedProgress = Math.min(1, Math.max(0, (rawProgress - delay) / (1 - delay)));
         setLineProgress(adjustedProgress);
         const newActiveIndex = Math.min(
@@ -300,6 +300,10 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
     return parts.join(" ");
   };
 
+  const getYearFromDate = (dateStr: string) => {
+    return new Date(dateStr).getFullYear().toString();
+  };
+
   const zigzagPath = generateZigzagPath();
   const dashOffset = pathLength * (1 - lineProgress);
   const maskWidth = 1200 * lineProgress;
@@ -316,15 +320,15 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
         >
           <defs>
             <linearGradient id="timeline-gold" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#d3b33f" stopOpacity="0.1" />
-              <stop offset="50%" stopColor="#d3b33f" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.1" />
+              <stop offset="0%" stopColor="#d3b33f" stopOpacity="0.2" />
+              <stop offset="50%" stopColor="#d3b33f" stopOpacity="0.6" />
+              <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.2" />
             </linearGradient>
             <mask id="timeline-progress-mask">
               <rect x="0" y="0" width={maskWidth} height={viewBoxHeight} fill="white" />
             </mask>
             <filter id="timeline-glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+              <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
               <feMerge>
                 <feMergeNode in="blur" />
                 <feMergeNode in="SourceGraphic" />
@@ -332,18 +336,31 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
             </filter>
           </defs>
 
-          <path ref={pathRef} d={zigzagPath} stroke="url(#timeline-gold)" strokeWidth="2" fill="none" strokeDasharray="6 6" />
+          <path ref={pathRef} d={zigzagPath} stroke="url(#timeline-gold)" strokeWidth="3" fill="none" strokeDasharray="6 6" />
 
           <path
             d={zigzagPath}
             stroke="#d3b33f"
-            strokeWidth="3"
+            strokeWidth="4"
             strokeDasharray="6 6"
             fill="none"
-            opacity="0.85"
+            opacity="0.9"
             mask="url(#timeline-progress-mask)"
             filter={activeCardIndex >= 0 ? "url(#timeline-glow)" : "none"}
           />
+
+          {posts.map((post, index) => {
+            const nodeY = 100 + index * nodeSpacing;
+            const year = getYearFromDate(post.date);
+            return (
+              <g key={`year-${post.id}`}>
+                <circle cx="600" cy={nodeY} r="6" fill="#d3b33f" opacity="0.9" filter="url(#timeline-glow)" />
+                <text x="580" y={nodeY + 5} fill="#d3b33f" fontSize="16" fontWeight="bold" opacity="0.9" fontFamily="system-ui" textAnchor="end">
+                  {year}
+                </text>
+              </g>
+            );
+          })}
         </svg>
 
         <div className="relative space-y-4 md:space-y-6" style={{ zIndex: 1 }}>
