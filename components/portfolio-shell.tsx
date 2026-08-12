@@ -280,33 +280,28 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
   const nodeSpacing = 260;
   const viewBoxHeight = totalCards > 0 ? 100 + (totalCards - 1) * nodeSpacing + 100 : 400;
 
-  const generateZigzagPath = () => {
+  const generateStraightPath = () => {
     if (totalCards === 0) return "";
     const centerX = 600;
-    const leftCardX = 260;
-    const rightCardX = 940;
+    const leftCardX = 294;
+    const rightCardX = 906;
     const parts = [`M ${centerX} 0`];
 
     for (let i = 0; i < totalCards; i++) {
       const nodeY = 100 + i * nodeSpacing;
-      const nextY = i < totalCards - 1 ? 100 + (i + 1) * nodeSpacing : viewBoxHeight;
       const isLeft = i % 2 === 0;
       const targetX = isLeft ? leftCardX : rightCardX;
 
-      parts.push(`C ${centerX} ${nodeY - 60}, ${targetX} ${nodeY - 30}, ${targetX} ${nodeY}`);
-      parts.push(`C ${targetX} ${nodeY + 30}, ${centerX} ${nodeY + 60}, ${centerX} ${nextY}`);
+      parts.push(`L ${centerX} ${nodeY}`);
+      parts.push(`L ${targetX} ${nodeY}`);
+      parts.push(`L ${centerX} ${nodeY}`);
     }
 
     return parts.join(" ");
   };
 
-  const getYearFromDate = (dateStr: string) => {
-    return new Date(dateStr).getFullYear().toString();
-  };
-
-  const zigzagPath = generateZigzagPath();
-  const dashOffset = pathLength * (1 - lineProgress);
-  const maskWidth = 1200 * lineProgress;
+  const straightPath = generateStraightPath();
+  const maskHeight = viewBoxHeight * lineProgress;
 
   return (
     <section ref={sectionRef} className="relative py-12 md:py-20">
@@ -325,7 +320,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
               <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.2" />
             </linearGradient>
             <mask id="timeline-progress-mask">
-              <rect x="0" y="0" width={maskWidth} height={viewBoxHeight} fill="white" />
+              <rect x="0" y="0" width="1200" height={maskHeight} fill="white" />
             </mask>
             <filter id="timeline-glow" x="-20%" y="-20%" width="140%" height="140%">
               <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur" />
@@ -336,31 +331,17 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
             </filter>
           </defs>
 
-          <path ref={pathRef} d={zigzagPath} stroke="url(#timeline-gold)" strokeWidth="3" fill="none" strokeDasharray="6 6" />
+          <path d={straightPath} stroke="url(#timeline-gold)" strokeWidth="3" fill="none" />
 
           <path
-            d={zigzagPath}
+            d={straightPath}
             stroke="#d3b33f"
             strokeWidth="4"
-            strokeDasharray="6 6"
             fill="none"
             opacity="0.9"
             mask="url(#timeline-progress-mask)"
             filter={activeCardIndex >= 0 ? "url(#timeline-glow)" : "none"}
           />
-
-          {posts.map((post, index) => {
-            const nodeY = 100 + index * nodeSpacing;
-            const year = getYearFromDate(post.date);
-            return (
-              <g key={`year-${post.id}`}>
-                <circle cx="600" cy={nodeY} r="6" fill="#d3b33f" opacity="0.9" filter="url(#timeline-glow)" />
-                <text x="580" y={nodeY + 5} fill="#d3b33f" fontSize="16" fontWeight="bold" opacity="0.9" fontFamily="system-ui" textAnchor="end">
-                  {year}
-                </text>
-              </g>
-            );
-          })}
         </svg>
 
         <div className="relative space-y-4 md:space-y-6" style={{ zIndex: 1 }}>
