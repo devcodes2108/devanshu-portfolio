@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { Hero3DScene } from "@/components/hero-3d-scene";
 import { LinkedInPostCard } from "@/components/linkedin-post-card";
 import { normalizeLinkedInPosts } from "@/lib/linkedin";
 import {
@@ -375,6 +376,10 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
   const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
   const [experienceLineProgress, setExperienceLineProgress] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
+  const aboutRef = useRef<HTMLElement>(null);
+  const skillsRef = useRef<HTMLElement>(null);
+  const [skillsVisible, setSkillsVisible] = useState(false);
+  const [aboutVisible, setAboutVisible] = useState(false);
   const { posts: linkedInPosts } = normalizeLinkedInPosts();
 
   useEffect(() => {
@@ -385,7 +390,7 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
       const scrollY = window.scrollY;
       const viewportHeight = window.innerHeight;
       const heroHeight = hero.offsetHeight;
-      const maxScroll = viewportHeight * 0.45;
+      const maxScroll = viewportHeight * 0.5;
 
       if (scrollY >= maxScroll) {
         hero.classList.add("is-hero-hidden");
@@ -423,6 +428,50 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
     updateHeroState();
     window.addEventListener("scroll", updateHeroState, { passive: true });
     return () => window.removeEventListener("scroll", updateHeroState);
+  }, []);
+
+  useEffect(() => {
+    const about = aboutRef.current;
+    if (!about) return;
+
+    const updateAboutState = () => {
+      const rect = about.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const progress = Math.min(1, Math.max(0, (viewportHeight - rect.top) / (viewportHeight + rect.height)));
+
+      if (progress >= 1 || progress <= 0) {
+        about.classList.add("is-about-merged");
+        about.classList.remove("is-about-visible");
+      } else {
+        about.classList.remove("is-about-merged");
+        about.classList.add("is-about-visible");
+        about.style.opacity = (1 - progress * 0.4).toFixed(3);
+        about.style.transform = `translate3d(0, ${-progress * 20}px, 0) scale(${1 - progress * 0.015})`;
+      }
+    };
+
+    updateAboutState();
+    window.addEventListener("scroll", updateAboutState, { passive: true });
+    return () => window.removeEventListener("scroll", updateAboutState);
+  }, []);
+
+  useEffect(() => {
+    const skills = skillsRef.current;
+    if (!skills) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setSkillsVisible(true);
+        } else {
+          setSkillsVisible(false);
+        }
+      },
+      { rootMargin: "-10% 0px -10% 0px", threshold: 0.1 }
+    );
+
+    observer.observe(skills);
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {
@@ -632,6 +681,9 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
           </div>
 
           <div className="hero-photo-stack relative flex items-center justify-center reveal-copy">
+            <div className="hero-3d-backdrop" aria-hidden="true">
+              <Hero3DScene scrollProgress={scrollProgress} />
+            </div>
             <div className="hero-paper-layer hero-paper-layer--back" aria-hidden="true" />
             <div className="hero-paper-layer hero-paper-layer--mid" aria-hidden="true" />
             <div className="hero-paper-layer hero-paper-layer--front" aria-hidden="true" />
@@ -641,7 +693,7 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
           </div>
         </section>
 
-        <section id="about" className="reveal-section grid gap-10 border-t border-black/5 py-20 md:grid-cols-[0.9fr_1.1fr]">
+        <section id="about" ref={aboutRef} className="reveal-section grid gap-10 border-t border-black/5 py-20 md:grid-cols-[0.9fr_1.1fr]">
           <div className="reveal-copy">
             <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">About</p>
             <h2 className="title-shimmer mt-4 max-w-xs text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Built for clarity, craft and momentum.</h2>
@@ -746,7 +798,7 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
           </div>
           <TimelinePostsSection posts={linkedInPosts} />
         </section>
-        <section id="skills" className="reveal-section border-t border-black/5 py-20">
+        <section id="skills" ref={skillsRef} className="reveal-section border-t border-black/5 py-20">
           <div className="mb-10 max-w-xl reveal-copy">
             <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">Capabilities</p>
             <h2 className="title-shimmer mt-4 text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Thoughtful craft across product and code.</h2>
@@ -754,7 +806,11 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
 
           <div className="grid gap-6 md:grid-cols-3">
             {skillGroups.map((group, index) => (
-              <div key={group.title} className={`reveal-card rounded-lg border border-black/8 bg-white p-6 ${index % 2 === 1 ? "md:translate-y-6" : ""}`}>
+              <div
+                key={group.title}
+                className={`skill-card reveal-card rounded-lg border border-black/8 bg-white p-6 ${index % 2 === 1 ? "md:translate-y-6" : ""} ${skillsVisible ? "is-skills-visible" : ""}`}
+                style={{ transitionDelay: `${index * 120}ms` }}
+              >
                 <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-black/60">{group.title}</h3>
                 <ul className="mt-5 space-y-3 text-sm leading-6 text-black/75">
                   {group.items.map((item) => (
