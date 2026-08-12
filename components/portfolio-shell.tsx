@@ -553,6 +553,19 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
           </div>
         </section>
 
+        <section id="posts" className="reveal-section border-t border-black/5 py-20">
+          <div className="mb-10 max-w-xl reveal-copy">
+            <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">From my LinkedIn</p>
+            <h2 className="title-shimmer mt-4 text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Ideas, builds and thoughts.</h2>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            {linkedInPosts.map((post) => (
+              <LinkedInPostCard key={post.id} post={post} />
+            ))}
+          </div>
+        </section>
+
         <section id="skills" className="reveal-section border-t border-black/5 py-20">
           <div className="mb-10 max-w-xl reveal-copy">
             <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">Capabilities</p>
@@ -721,19 +734,6 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
                 <img src="https://ghchart.rshah.org/d3b33f/devcodes2108" alt="Devanshu Singh GitHub contribution calendar" loading="lazy" />
               </div>
             </a>
-          </div>
-        </section>
-
-        <section id="posts" className="reveal-section border-t border-black/5 py-20">
-          <div className="mb-10 max-w-xl reveal-copy">
-            <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">From my LinkedIn</p>
-            <h2 className="title-shimmer mt-4 text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Ideas, builds and thoughts.</h2>
-          </div>
-
-          <div className="grid gap-5 lg:grid-cols-2">
-            {linkedInPosts.map((post) => (
-              <LinkedInPostCard key={post.id} post={post} />
-            ))}
           </div>
         </section>
 
