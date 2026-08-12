@@ -74,7 +74,7 @@ function FerrisWheelSlideshow({
 
   if (count === 1) {
     return (
-      <div className="relative h-40 w-full overflow-hidden rounded border border-black/8 bg-black/[0.02]">
+      <div className="relative h-56 w-full overflow-hidden rounded border border-black/8 bg-black/[0.02]">
         <Image src={images[0]} alt={alt} fill className="object-contain" sizes="(max-width: 768px) 100vw, 50vw" loading="lazy" />
       </div>
     );
@@ -85,19 +85,19 @@ function FerrisWheelSlideshow({
     const normalized = diff === 0 ? 0 : diff > 0 ? (diff === 1 ? 1 : 2) : (diff === -1 ? -1 : -2);
 
     if (normalized === 0) {
-      return { opacity: 1, x: 0, rotate: 0, scale: 1, z: 2 };
+      return { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1, z: 2 };
     } else if (normalized === 1 || (currentIndex === count - 1 && index === 0)) {
-      return { opacity: 0, x: 105, rotate: 18, scale: 0.85, z: 1 };
+      return { opacity: 0.35, x: 42, y: 0, rotate: 10, scale: 0.82, z: 1 };
     } else if (normalized === -1 || (currentIndex === 0 && index === count - 1)) {
-      return { opacity: 0, x: -105, rotate: -18, scale: 0.85, z: 1 };
+      return { opacity: 0.25, x: -42, y: 8, rotate: -10, scale: 0.78, z: 0 };
     } else {
-      return { opacity: 0, x: 0, rotate: 0, scale: 0.8, z: 0 };
+      return { opacity: 0, x: 0, y: 0, rotate: 0, scale: 0.75, z: 0 };
     }
   };
 
   return (
     <div
-      className="relative h-40 w-full overflow-hidden"
+      className="relative h-52 w-full overflow-hidden"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onTouchStart={handleTouchStart}
@@ -113,18 +113,18 @@ function FerrisWheelSlideshow({
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 transition-all duration-700 ease-out"
               style={{
                 opacity: state.opacity,
-                transform: `translateX(${state.x}%) rotate(${state.rotate}deg) scale(${state.scale})`,
+                transform: `translateX(${state.x}%) translateY(${state.y}%) rotate(${state.rotate}deg) scale(${state.scale})`,
                 zIndex: state.z,
                 willChange: "transform, opacity",
               }}
             >
-              <div className="relative h-28 w-24 overflow-hidden rounded border border-black/10 bg-white md:h-32 md:w-28">
+              <div className="relative h-40 w-40 overflow-hidden rounded border border-black/10 bg-white md:h-48 md:w-48">
                 <Image
                   src={src}
                   alt={`${alt} - image ${i + 1}`}
                   fill
                   className="object-contain"
-                  sizes="160px"
+                  sizes="(max-width: 768px) 60vw, 320px"
                   loading="lazy"
                 />
               </div>

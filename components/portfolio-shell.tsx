@@ -266,16 +266,16 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
   }, [posts.length]);
 
   const totalCards = posts.length;
-  const nodeSpacing = 240;
-  const viewBoxHeight = Math.max(totalCards * nodeSpacing + 100, 400);
+  const nodeSpacing = 260;
+  const viewBoxHeight = Math.max(totalCards * nodeSpacing + 120, 400);
 
   const generateZigzagPath = () => {
     const parts = [`M 16 0`];
     for (let i = 0; i < totalCards; i++) {
-      const nodeY = 80 + i * nodeSpacing;
-      const nextY = i < totalCards - 1 ? 80 + (i + 1) * nodeSpacing : viewBoxHeight;
+      const nodeY = 100 + i * nodeSpacing;
+      const nextY = i < totalCards - 1 ? 100 + (i + 1) * nodeSpacing : viewBoxHeight;
       const midY = (nodeY + nextY) / 2;
-      const cpX = i % 2 === 0 ? 50 : -18;
+      const cpX = i % 2 === 0 ? 45 : -12;
       parts.push(`Q ${cpX} ${midY} 16 ${nextY}`);
     }
     return parts.join(" ");
@@ -288,7 +288,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
     <section ref={sectionRef} className="relative py-12 md:py-20">
       <div className="relative">
         <svg
-          className="pointer-events-none absolute left-3 top-0 h-full w-6 md:left-5 md:w-8"
+          className="pointer-events-none absolute left-1/2 top-0 h-full w-8 -translate-x-1/2 md:w-10"
           viewBox={`0 0 32 ${viewBoxHeight}`}
           preserveAspectRatio="none"
           aria-hidden="true"
@@ -323,7 +323,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
                 className={`relative pl-10 md:pl-12 ${isLeft ? "md:pr-[55%]" : "md:pl-[55%]"}`}
               >
                 <div
-                  className="absolute left-3 top-6 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-[#d3b33f] bg-white md:left-5"
+                  className="absolute left-1/2 top-6 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-[#d3b33f] bg-white"
                   aria-hidden="true"
                 />
                 <LinkedInPostCard post={post} index={index} />
