@@ -282,27 +282,16 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
 
   const generateCurvedPath = () => {
     if (totalCards === 0) return "";
-    const parts = [`M 16 0`];
     const centerX = 16;
-    const amplitude = 7;
+    const parts = [`M ${centerX} 0`];
 
     for (let i = 0; i < totalCards; i++) {
       const nodeY = 100 + i * nodeSpacing;
-      const targetX = i % 2 === 0 ? centerX - amplitude : centerX + amplitude;
-
-      if (i === 0) {
-        parts.push(`C ${centerX} 25, ${targetX} 60, ${targetX} ${nodeY}`);
-      } else {
-        const prevY = 100 + (i - 1) * nodeSpacing;
-        const prevTargetX = (i - 1) % 2 === 0 ? centerX - amplitude : centerX + amplitude;
-        const midY = (prevY + nodeY) / 2;
-        const cpOffset = nodeSpacing * 0.35;
-        parts.push(`C ${prevTargetX} ${prevY + cpOffset}, ${targetX} ${nodeY - cpOffset}, ${targetX} ${nodeY}`);
-      }
+      const nextY = i < totalCards - 1 ? 100 + (i + 1) * nodeSpacing : viewBoxHeight;
+      const midY = (nodeY + nextY) / 2;
+      const subtleWave = i % 2 === 0 ? 1.2 : -1.2;
+      parts.push(`Q ${centerX + subtleWave} ${midY} ${centerX} ${nextY}`);
     }
-
-    const lastCardY = 100 + (totalCards - 1) * nodeSpacing;
-    parts.push(`L 16 ${lastCardY + 60}`);
 
     return parts.join(" ");
   };
@@ -369,9 +358,9 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
                       rx="2"
                       ry="2"
                       stroke="#d3b33f"
-                      strokeWidth="1.5"
+                      strokeWidth="1.2"
                       fill="none"
-                      strokeDasharray="10 8"
+                      strokeDasharray="30 100"
                       strokeLinecap="round"
                     />
                   </svg>
@@ -713,7 +702,7 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
         </section>
 
         <section id="posts" className="reveal-section border-t border-black/5">
-          <div className="mb-10 max-w-xl px-6 md:mx-auto md:px-0 reveal-copy">
+          <div className="mb-10 max-w-xl reveal-copy">
             <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">From my LinkedIn</p>
             <h2 className="title-shimmer mt-4 text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Ideas, builds and thoughts.</h2>
           </div>

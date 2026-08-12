@@ -48,7 +48,7 @@ function FerrisWheelSlideshow({
       timerRef.current = null;
       return;
     }
-    timerRef.current = setInterval(advance, 4000);
+    timerRef.current = setInterval(advance, 2000);
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
       timerRef.current = null;
