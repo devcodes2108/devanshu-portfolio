@@ -280,23 +280,26 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
   const nodeSpacing = 260;
   const viewBoxHeight = totalCards > 0 ? 100 + (totalCards - 1) * nodeSpacing + 100 : 400;
 
-  const generateCurvedPath = () => {
+  const generateZigzagPath = () => {
     if (totalCards === 0) return "";
     const centerX = 16;
+    const amplitude = 12;
     const parts = [`M ${centerX} 0`];
 
     for (let i = 0; i < totalCards; i++) {
       const nodeY = 100 + i * nodeSpacing;
       const nextY = i < totalCards - 1 ? 100 + (i + 1) * nodeSpacing : viewBoxHeight;
-      const midY = (nodeY + nextY) / 2;
-      const subtleWave = i % 2 === 0 ? 1.2 : -1.2;
-      parts.push(`Q ${centerX + subtleWave} ${midY} ${centerX} ${nextY}`);
+      const isLeft = i % 2 === 0;
+      const targetX = isLeft ? centerX - amplitude : centerX + amplitude;
+
+      parts.push(`C ${centerX} ${nodeY - 50}, ${targetX} ${nodeY - 25}, ${targetX} ${nodeY}`);
+      parts.push(`C ${targetX} ${nodeY + 25}, ${centerX} ${nodeY + 50}, ${centerX} ${nextY}`);
     }
 
     return parts.join(" ");
   };
 
-   const curvedPath = generateCurvedPath();
+   const zigzagPath = generateZigzagPath();
    const dashOffset = pathLength * (1 - lineProgress);
    const maskWidth = 32 * lineProgress;
 
@@ -319,59 +322,52 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
              <mask id="timeline-progress-mask">
                <rect x="0" y="0" width={maskWidth} height={viewBoxHeight} fill="white" />
              </mask>
+             <filter id="timeline-glow" x="-50%" y="-50%" width="200%" height="200%">
+               <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur" />
+               <feMerge>
+                 <feMergeNode in="blur" />
+                 <feMergeNode in="SourceGraphic" />
+               </feMerge>
+             </filter>
            </defs>
 
-           <path ref={pathRef} d={curvedPath} stroke="url(#timeline-gold)" strokeWidth="1.5" fill="none" strokeDasharray="4 4" />
+           <path ref={pathRef} d={zigzagPath} stroke="url(#timeline-gold)" strokeWidth="1.5" fill="none" strokeDasharray="4 4" />
 
            <path
-             d={curvedPath}
+             d={zigzagPath}
              stroke="#d3b33f"
              strokeWidth="2"
              strokeDasharray="4 4"
              fill="none"
              opacity="0.7"
              mask="url(#timeline-progress-mask)"
+             filter={activeCardIndex >= 0 ? "url(#timeline-glow)" : "none"}
            />
          </svg>
 
-        <div className="relative space-y-4 md:space-y-6" style={{ zIndex: 1 }}>
-          {posts.map((post, index) => {
-            const isLeft = index % 2 === 0;
-            const isActive = index === activeCardIndex;
-            return (
-              <div
-                key={post.id}
-                className={`relative pl-10 md:pl-12 ${isLeft ? "md:pr-[55%]" : "md:pl-[55%]"}`}
-              >
-                <div
-                  className="absolute left-1/2 top-6 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-[#d3b33f] bg-white"
-                  aria-hidden="true"
-                />
-                <div className={`timeline-card-wrapper ${isActive ? "is-line-active" : ""}`}>
-                  <LinkedInPostCard post={post} index={index} />
-                  <svg className="timeline-border-anim" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                    <rect
-                      x="1"
-                      y="1"
-                      width="98"
-                      height="98"
-                      rx="2"
-                      ry="2"
-                      stroke="#d3b33f"
-                      strokeWidth="1.2"
-                      fill="none"
-                      strokeDasharray="30 100"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-    </section>
-  );
+         <div className="relative space-y-4 md:space-y-6" style={{ zIndex: 1 }}>
+           {posts.map((post, index) => {
+             const isLeft = index % 2 === 0;
+             const isActive = index === activeCardIndex;
+             return (
+               <div
+                 key={post.id}
+                 className={`relative pl-10 md:pl-12 ${isLeft ? "md:pr-[55%]" : "md:pl-[55%]"}`}
+               >
+                 <div
+                   className="absolute left-1/2 top-6 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-[#d3b33f] bg-white"
+                   aria-hidden="true"
+                 />
+                 <div className={`timeline-card-wrapper ${isActive ? "is-line-active" : ""}`}>
+                   <LinkedInPostCard post={post} index={index} />
+                 </div>
+               </div>
+             );
+           })}
+         </div>
+       </div>
+     </section>
+   );
 }
 
 export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary[] }) {

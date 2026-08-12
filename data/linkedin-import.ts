@@ -20,30 +20,6 @@ export type LinkedInPost = {
 
 export const rawLinkedInPosts: LinkedInPost[] = [
   {
-    id: "klf2026",
-    title: "Kalinga Literary Festival Hosting",
-    date: "2026-01-08",
-    url: "https://www.linkedin.com/posts/devanshu-singh-725b2b307_kalingaliteraryfestival2026-experience-activity-7473251803950870528-QMhN",
-    text: "4 days. 11 sessions. Countless conversations. Lifelong connections.\n\nFrom 8–11 January 2026, I had the privilege of serving as a host at the #KalingaLiteraryFestival2026. It was an opportunity to engage with extraordinary minds, facilitate meaningful dialogue, and witness the transformative power of stories, ideas, and culture.\n\n📍 9 January 2026 | Mayfair Central Hall\n• Stories That Shape Humanity: Translating Worlds, Transforming Futures — featuring Daisy Rockwell, Deepa Bhasthi, Ranjit Hoskote.\n• Changing Lives: One Girl at a Time — featuring Safeena Husain, founder of Educate Girls.\n• Science as Story: The Human Side of Discovery — featuring Prof. Bedangadas Mohanty, Prof. Jatin Nayak, S Rajguru.\n• Kashmir: A Literary Way Forward — featuring Mehak Jamal, Rahul Pandita.\n\n📍 Additional Session | 9 January 2026 | Mayfair Crystal 2\n• Public Service and Literary Imagination — featuring Sujeet Kumar, Kuladhar Saikia, Vikas Swarup.\n\n📍 10 January 2026 | Mayfair Crystal 2\n• Heritage Cuisine: The South Asian Experience — featuring Rohini Rana, Satya Gopal Rajguru.\n• The Civilisational Dialogue — featuring Hindol Sengupta, Koral Dasgupta, Tuhin Sinha.\n• The Sun Temple of Konark: A Chronicle in Stone — featuring Dr. Adyasha Das, Anil Dhir, S N Mallik.\n\n📍 11 January 2026 | Mayfair Central Hall\n• Dance Like a God — featuring Hindol Sengupta.\n• Bhartiya Darshan, Parampara aur Yuva — featuring Acharya Prashant.\n\nBeyond the sessions I hosted, I had the opportunity to interact with inspiring personalities, including Amit Lodha, IPS officer and author of Bihar Diaries, and Shobha Tharoor Srinivasan, acclaimed children's author and storyteller. What made this experience truly unforgettable was the incredible volunteer family behind the scenes.",
-    excerpt: "Hosted multiple sessions at #KalingaLiteraryFestival2026 — an experience far more than moderating discussions. Engaged with extraordinary minds across 4 days and 11 sessions.",
-    images: [
-      "https://media.licdn.com/dms/image/v2/D4D22AQEeuEa5Ure72w/feedshare-shrink_800/B4DZ7ZS6BQJsAg-/0/1781762073599?e=2147483647&v=beta&t=PUeOI20FqzX6SDZY_ZQ1l9syUBDieTkcIMSNAq4oA0A",
-      "https://media.licdn.com/dms/image/v2/D4D22AQEQSSDVT1pQRQ/feedshare-shrink_800/B4DZ7ZS1vFI0Ag-/0/1781762055421?e=2147483647&v=beta&t=FW4rDaNqmqLHzCILmOeifVUPdKTjp2B_-Pmk861dZrk",
-      "https://media.licdn.com/dms/image/v2/D4D22AQFlPA0nWxBv5g/feedshare-shrink_800/B4DZ7ZS03sHgAc-/0/1781762051910?e=2147483647&v=beta&t=9uP20HSr_MC9UbDcRt6KoGECeGB4MOgLyoztAa0xOPM",
-      "https://media.licdn.com/dms/image/v2/D4D22AQGU5OJjLyIcOw/feedshare-shrink_800/B4DZ7ZS0y_J4Ac-/0/1781762051542?e=2147483647&v=beta&t=LlUo1MTA2m3i4dtLzTFXoHH5EOj_NgLVi_l5aCuMw8M",
-      "https://media.licdn.com/dms/image/v2/D4D22AQGh1LpjdGg5oQ/feedshare-shrink_800/B4DZ7ZS1rzHgAc-/0/1781762055591?e=2147483647&v=beta&t=Legfp3YJ8Jd3LCbIASD4fbXyW7jtc4Vs-kposzDvwxw",
-    ],
-    imageAlt: "Kalinga Literary Festival 2026 - Devanshu Singh hosting sessions with authors and cultural figures",
-    hashtags: ["#KLF2026", "#PublicSpeaking", "#EventManagement", "#Literature", "#Moderation", "#Leadership", "#Networking", "#Community", "#Teamwork"],
-    reactions: 211,
-    comments: 57,
-    impressions: 4703,
-    mediaType: "image",
-    category: "event",
-    included: true,
-    source: "manual",
-  },
-  {
     id: "soa-english-cafe-panel",
     title: "Hosted The Zero Hour — Anti-Ragging Panel and Podcast",
     date: "2025-12-06",
