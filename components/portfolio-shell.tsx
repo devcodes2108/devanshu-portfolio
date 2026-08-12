@@ -232,6 +232,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
   const [lineProgress, setLineProgress] = useState(0);
   const pathRef = useRef<SVGPathElement>(null);
   const [pathLength, setPathLength] = useState(1000);
+  const [activeCardIndex, setActiveCardIndex] = useState(-1);
 
   useEffect(() => {
     const section = sectionRef.current;
@@ -245,19 +246,29 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
 
       if (sectionTop >= viewportHeight) {
         setLineProgress(0);
+        setActiveCardIndex(-1);
       } else if (sectionTop + sectionHeight <= 0) {
         setLineProgress(1);
+        setActiveCardIndex(posts.length - 1);
       } else {
         const scrolled = viewportHeight - sectionTop;
         const total = sectionHeight + viewportHeight;
-        setLineProgress(Math.min(1, Math.max(0, scrolled / total)));
+        const rawProgress = Math.min(1, Math.max(0, scrolled / total));
+        const delay = 0.12;
+        const adjustedProgress = Math.min(1, Math.max(0, (rawProgress - delay) / (1 - delay)));
+        setLineProgress(adjustedProgress);
+        const newActiveIndex = Math.min(
+          posts.length - 1,
+          Math.floor(adjustedProgress * posts.length)
+        );
+        setActiveCardIndex(newActiveIndex);
       }
     };
 
     updateLine();
     window.addEventListener("scroll", updateLine, { passive: true });
     return () => window.removeEventListener("scroll", updateLine);
-  }, []);
+  }, [posts.length]);
 
   useEffect(() => {
     if (pathRef.current) {
@@ -267,21 +278,36 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
 
   const totalCards = posts.length;
   const nodeSpacing = 260;
-  const viewBoxHeight = Math.max(totalCards * nodeSpacing + 120, 400);
+  const viewBoxHeight = totalCards > 0 ? 100 + (totalCards - 1) * nodeSpacing + 100 : 400;
 
-  const generateZigzagPath = () => {
+  const generateCurvedPath = () => {
+    if (totalCards === 0) return "";
     const parts = [`M 16 0`];
+    const centerX = 16;
+    const amplitude = 7;
+
     for (let i = 0; i < totalCards; i++) {
       const nodeY = 100 + i * nodeSpacing;
-      const nextY = i < totalCards - 1 ? 100 + (i + 1) * nodeSpacing : viewBoxHeight;
-      const midY = (nodeY + nextY) / 2;
-      const cpX = i % 2 === 0 ? 45 : -12;
-      parts.push(`Q ${cpX} ${midY} 16 ${nextY}`);
+      const targetX = i % 2 === 0 ? centerX - amplitude : centerX + amplitude;
+
+      if (i === 0) {
+        parts.push(`C ${centerX} 25, ${targetX} 60, ${targetX} ${nodeY}`);
+      } else {
+        const prevY = 100 + (i - 1) * nodeSpacing;
+        const prevTargetX = (i - 1) % 2 === 0 ? centerX - amplitude : centerX + amplitude;
+        const midY = (prevY + nodeY) / 2;
+        const cpOffset = nodeSpacing * 0.35;
+        parts.push(`C ${prevTargetX} ${prevY + cpOffset}, ${targetX} ${nodeY - cpOffset}, ${targetX} ${nodeY}`);
+      }
     }
+
+    const lastCardY = 100 + (totalCards - 1) * nodeSpacing;
+    parts.push(`L 16 ${lastCardY + 60}`);
+
     return parts.join(" ");
   };
 
-  const zigzagPath = generateZigzagPath();
+  const curvedPath = generateCurvedPath();
   const dashOffset = pathLength * (1 - lineProgress);
 
   return (
@@ -289,6 +315,7 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
       <div className="relative">
         <svg
           className="pointer-events-none absolute left-1/2 top-0 h-full w-8 -translate-x-1/2 md:w-10"
+          style={{ zIndex: 0 }}
           viewBox={`0 0 32 ${viewBoxHeight}`}
           preserveAspectRatio="none"
           aria-hidden="true"
@@ -301,10 +328,10 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
             </linearGradient>
           </defs>
 
-          <path ref={pathRef} d={zigzagPath} stroke="url(#timeline-gold)" strokeWidth="1.5" fill="none" />
+          <path ref={pathRef} d={curvedPath} stroke="url(#timeline-gold)" strokeWidth="1.5" fill="none" />
 
           <path
-            d={zigzagPath}
+            d={curvedPath}
             stroke="#d3b33f"
             strokeWidth="2"
             strokeDasharray={pathLength}
@@ -314,9 +341,10 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
           />
         </svg>
 
-        <div className="space-y-4 md:space-y-6">
+        <div className="relative space-y-4 md:space-y-6" style={{ zIndex: 1 }}>
           {posts.map((post, index) => {
             const isLeft = index % 2 === 0;
+            const isActive = index === activeCardIndex;
             return (
               <div
                 key={post.id}
@@ -326,7 +354,9 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
                   className="absolute left-1/2 top-6 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-[#d3b33f] bg-white"
                   aria-hidden="true"
                 />
-                <LinkedInPostCard post={post} index={index} />
+                <div className={`timeline-card-wrapper ${isActive ? "is-line-active" : ""}`}>
+                  <LinkedInPostCard post={post} index={index} />
+                </div>
               </div>
             );
           })}
