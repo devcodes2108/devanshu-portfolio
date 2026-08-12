@@ -307,39 +307,43 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
     return parts.join(" ");
   };
 
-  const curvedPath = generateCurvedPath();
-  const dashOffset = pathLength * (1 - lineProgress);
+   const curvedPath = generateCurvedPath();
+   const dashOffset = pathLength * (1 - lineProgress);
+   const maskWidth = 32 * lineProgress;
 
-  return (
-    <section ref={sectionRef} className="relative py-12 md:py-20">
-      <div className="relative">
-        <svg
-          className="pointer-events-none absolute left-1/2 top-0 h-full w-8 -translate-x-1/2 md:w-10"
-          style={{ zIndex: 0 }}
-          viewBox={`0 0 32 ${viewBoxHeight}`}
-          preserveAspectRatio="none"
-          aria-hidden="true"
-        >
-          <defs>
-            <linearGradient id="timeline-gold" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#d3b33f" stopOpacity="0.1" />
-              <stop offset="50%" stopColor="#d3b33f" stopOpacity="0.5" />
-              <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.1" />
-            </linearGradient>
-          </defs>
+   return (
+     <section ref={sectionRef} className="relative py-12 md:py-20">
+       <div className="relative">
+         <svg
+           className="pointer-events-none absolute left-1/2 top-0 h-full w-8 -translate-x-1/2 md:w-10"
+           style={{ zIndex: 0 }}
+           viewBox={`0 0 32 ${viewBoxHeight}`}
+           preserveAspectRatio="none"
+           aria-hidden="true"
+         >
+           <defs>
+             <linearGradient id="timeline-gold" x1="0" y1="0" x2="0" y2="1">
+               <stop offset="0%" stopColor="#d3b33f" stopOpacity="0.1" />
+               <stop offset="50%" stopColor="#d3b33f" stopOpacity="0.5" />
+               <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.1" />
+             </linearGradient>
+             <mask id="timeline-progress-mask">
+               <rect x="0" y="0" width={maskWidth} height={viewBoxHeight} fill="white" />
+             </mask>
+           </defs>
 
-          <path ref={pathRef} d={curvedPath} stroke="url(#timeline-gold)" strokeWidth="1.5" fill="none" />
+           <path ref={pathRef} d={curvedPath} stroke="url(#timeline-gold)" strokeWidth="1.5" fill="none" strokeDasharray="4 4" />
 
-          <path
-            d={curvedPath}
-            stroke="#d3b33f"
-            strokeWidth="2"
-            strokeDasharray={pathLength}
-            strokeDashoffset={dashOffset}
-            fill="none"
-            opacity="0.6"
-          />
-        </svg>
+           <path
+             d={curvedPath}
+             stroke="#d3b33f"
+             strokeWidth="2"
+             strokeDasharray="4 4"
+             fill="none"
+             opacity="0.7"
+             mask="url(#timeline-progress-mask)"
+           />
+         </svg>
 
         <div className="relative space-y-4 md:space-y-6" style={{ zIndex: 1 }}>
           {posts.map((post, index) => {
@@ -356,6 +360,21 @@ function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
                 />
                 <div className={`timeline-card-wrapper ${isActive ? "is-line-active" : ""}`}>
                   <LinkedInPostCard post={post} index={index} />
+                  <svg className="timeline-border-anim" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                    <rect
+                      x="1"
+                      y="1"
+                      width="98"
+                      height="98"
+                      rx="2"
+                      ry="2"
+                      stroke="#d3b33f"
+                      strokeWidth="1.5"
+                      fill="none"
+                      strokeDasharray="10 8"
+                      strokeLinecap="round"
+                    />
+                  </svg>
                 </div>
               </div>
             );

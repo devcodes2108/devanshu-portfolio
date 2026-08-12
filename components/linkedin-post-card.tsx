@@ -74,7 +74,7 @@ function FerrisWheelSlideshow({
 
   if (count === 1) {
     return (
-      <div className="relative h-56 w-full overflow-hidden rounded border border-black/8 bg-black/[0.02]">
+      <div className="relative h-64 w-full overflow-hidden rounded border border-black/8 bg-black/[0.02]">
         <Image src={images[0]} alt={alt} fill className="object-contain" sizes="(max-width: 768px) 100vw, 50vw" loading="lazy" />
       </div>
     );
@@ -97,7 +97,7 @@ function FerrisWheelSlideshow({
 
   return (
     <div
-      className="relative h-52 w-full overflow-hidden"
+      className="relative h-64 w-full overflow-hidden"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onTouchStart={handleTouchStart}
@@ -118,7 +118,7 @@ function FerrisWheelSlideshow({
                 willChange: "transform, opacity",
               }}
             >
-              <div className="relative h-40 w-40 overflow-hidden rounded border border-black/10 bg-white md:h-48 md:w-48">
+              <div className="relative h-48 w-48 overflow-hidden rounded border border-black/10 bg-white md:h-56 md:w-56">
                 <Image
                   src={src}
                   alt={`${alt} - image ${i + 1}`}
