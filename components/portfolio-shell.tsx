@@ -3,7 +3,8 @@
 import Image from "next/image";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Hero3DScene } from "@/components/hero-3d-scene";
-import { rawLinkedInPosts } from "@/data/linkedin-import";
+import { LinkedInPostCard } from "@/components/linkedin-post-card";
+import { normalizeLinkedInPosts } from "@/lib/linkedin";
 import {
   certifications,
   contactNotes,
@@ -109,18 +110,18 @@ function InteractiveDotField() {
   );
 }
 
-function GitHubIcon({ className = "" }: { className?: string }) {
+export function LinkedInIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56v-2.13c-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .98-.31 3.18 1.18A11.1 11.1 0 0 1 12 6.02c.98 0 1.96.13 2.88.39 2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.07.78 2.16v3.12c0 .31.21.67.79.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
+      <path d="M20.45 20.45h-3.56v-5.58c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.68H9.34V8.98h3.42v1.57h.05a3.75 3.75 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.29ZM5.32 7.41a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12Zm1.78 13.04H3.53V8.98H7.1v11.47ZM22.23 0H1.76C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.76 24h20.47c.97 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0Z" />
     </svg>
   );
 }
 
-function LinkedInIcon({ className = "" }: { className?: string }) {
+export function GitHubIcon({ className = "" }: { className?: string }) {
   return (
     <svg className={className} aria-hidden="true" viewBox="0 0 24 24" fill="currentColor">
-      <path d="M20.45 20.45h-3.56v-5.58c0-1.33-.03-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.68H9.34V8.98h3.42v1.57h.05a3.75 3.75 0 0 1 3.37-1.85c3.6 0 4.27 2.37 4.27 5.46v6.29ZM5.32 7.41a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12Zm1.78 13.04H3.53V8.98H7.1v11.47ZM22.23 0H1.76C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.76 24h20.47c.97 0 1.77-.77 1.77-1.72V1.72C24 .77 23.2 0 22.23 0Z" />
+      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.92.58.11.79-.25.79-.56v-2.13c-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.7 1.25 3.36.96.1-.75.4-1.25.73-1.54-2.56-.29-5.26-1.28-5.26-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.47.11-3.06 0 0 .98-.31 3.18 1.18A11.1 11.1 0 0 1 12 6.02c.98 0 1.96.13 2.88.39 2.21-1.49 3.18-1.18 3.18-1.18.63 1.59.23 2.77.11 3.06.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.4-5.27 5.69.41.36.78 1.07.78 2.16v3.12c0 .31.21.67.79.56A11.51 11.51 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z" />
     </svg>
   );
 }
@@ -231,7 +232,7 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeExperienceIndex, setActiveExperienceIndex] = useState(0);
   const [experienceLineProgress, setExperienceLineProgress] = useState(0);
-  const posts = rawLinkedInPosts.slice(0, 6);
+  const { posts: linkedInPosts } = normalizeLinkedInPosts();
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -725,37 +726,13 @@ export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary
 
         <section id="posts" className="reveal-section border-t border-black/5 py-20">
           <div className="mb-10 max-w-xl reveal-copy">
-            <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">LinkedIn activity</p>
-            <h2 className="title-shimmer mt-4 text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Public learning, leadership and technical momentum.</h2>
+            <p className="text-[10px] font-medium uppercase tracking-[0.28em] text-black/55">From my LinkedIn</p>
+            <h2 className="title-shimmer mt-4 text-3xl font-black uppercase tracking-[-0.06em] text-black md:text-5xl">Ideas, builds and thoughts.</h2>
           </div>
 
-          <div className="grid gap-5 lg:grid-cols-3">
-            {posts.map((post, index) => (
-              <article key={post.title} className={`reveal-card rounded-lg border border-black/8 bg-white p-6 ${index % 2 === 1 ? "lg:translate-y-6" : ""}`}>
-                <div className="mb-4 flex items-center justify-between gap-3 text-[10px] font-medium uppercase tracking-[0.18em] text-black/55">
-                  <span>{post.type}</span>
-                  <span>{post.date}</span>
-                </div>
-                <h3 className="text-xl font-bold tracking-[-0.05em] text-black">{post.title}</h3>
-                <ScrollRevealParagraph className="mt-4 text-sm leading-7 text-black/65">{post.description}</ScrollRevealParagraph>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {post.tags.slice(0, 3).map((tag) => (
-                    <span key={`${post.title}-${tag}`} className="rounded-full border border-black/10 bg-[#f7f3eb] px-2 py-1 text-[9px] font-medium uppercase tracking-[0.18em] text-black/60">
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-                <div className="mt-6 flex items-center justify-between border-t border-black/5 pt-4 text-[11px] font-medium uppercase tracking-[0.16em] text-black/55">
-                  <span>{post.reactions ?? post.impressions ?? 0} reactions</span>
-                  <span>{post.comments ?? 0} comments</span>
-                </div>
-                {post.link ? (
-                  <a href={post.link} target="_blank" rel="noreferrer" className="social-button social-button-light mt-4 inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-black">
-                    <LinkedInIcon className="h-3.5 w-3.5" />
-                    View post
-                  </a>
-                ) : null}
-              </article>
+          <div className="grid gap-5 lg:grid-cols-2">
+            {linkedInPosts.map((post) => (
+              <LinkedInPostCard key={post.id} post={post} />
             ))}
           </div>
         </section>

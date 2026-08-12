@@ -1,4 +1,4 @@
-import { linkedinProfile, rawLinkedInPosts, type LinkedInPost } from "@/data/linkedin-import";
+import { linkedinProfile, getFilteredLinkedInPosts, getLinkedInDebugInfo, type LinkedInPost } from "@/data/linkedin-import";
 
 export type NormalizedLinkedInProfile = {
   name: string;
@@ -13,6 +13,12 @@ export type NormalizedLinkedInProfile = {
 
 export type NormalizedLinkedInActivity = {
   posts: LinkedInPost[];
+  debug?: {
+    total: number;
+    included: number;
+    excluded: number;
+    excludedItems: Array<{ id: string; title: string; reason: string }>;
+  };
 };
 
 export function normalizeLinkedInProfile() {
@@ -25,8 +31,12 @@ export function normalizeLinkedInProfile() {
   } satisfies NormalizedLinkedInProfile;
 }
 
-export function normalizeLinkedInPosts() {
+export function normalizeLinkedInPosts(includeDebug = false): NormalizedLinkedInActivity {
+  const posts = getFilteredLinkedInPosts();
+  const debug = includeDebug ? getLinkedInDebugInfo() : undefined;
+
   return {
-    posts: rawLinkedInPosts,
+    posts,
+    debug,
   } satisfies NormalizedLinkedInActivity;
 }
