@@ -228,139 +228,87 @@ function getProjectDescription(repo: GitHubRepoSummary) {
 }
 
 function TimelinePostsSection({ posts }: { posts: LinkedInPost[] }) {
-  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const sectionRef = useRef<HTMLElement>(null);
   const [lineProgress, setLineProgress] = useState(0);
-  const animationRef = useRef<number>(0);
-  const targetProgressRef = useRef(0);
 
   useEffect(() => {
-    let start: number | null = null;
-    const duration = 700;
-    const animate = (timestamp: number) => {
-      if (!start) start = timestamp;
-      const elapsed = timestamp - start;
-      const current = lineProgress;
-      const target = targetProgressRef.current;
-      const diff = target - current;
-      if (Math.abs(diff) < 0.005) {
-        setLineProgress(target);
-        animationRef.current = 0;
-        return;
+    const section = sectionRef.current;
+    if (!section) return;
+
+    const updateLine = () => {
+      const rect = section.getBoundingClientRect();
+      const sectionTop = rect.top;
+      const sectionHeight = rect.height;
+      const viewportHeight = window.innerHeight;
+
+      if (sectionTop >= viewportHeight) {
+        setLineProgress(0);
+      } else if (sectionTop + sectionHeight <= 0) {
+        setLineProgress(1);
+      } else {
+        const scrolled = viewportHeight - sectionTop;
+        const total = sectionHeight + viewportHeight;
+        setLineProgress(Math.min(1, Math.max(0, scrolled / total)));
       }
-      const progress = Math.min(elapsed / duration, 1);
-      const eased = 1 - Math.pow(1 - progress, 3);
-      setLineProgress(current + diff * eased * 0.18);
-      animationRef.current = requestAnimationFrame(animate);
     };
-    animationRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (animationRef.current) cancelAnimationFrame(animationRef.current);
-    };
-  }, [lineProgress]);
 
-  const handleCardHover = (index: number) => {
-    setHoveredIndex(index);
-    targetProgressRef.current = posts.length <= 1 ? 1 : index / (posts.length - 1);
-  };
-
-  const handleCardLeave = () => {
-    setHoveredIndex(null);
-    targetProgressRef.current = 1;
-  };
+    updateLine();
+    window.addEventListener("scroll", updateLine, { passive: true });
+    return () => window.removeEventListener("scroll", updateLine);
+  }, []);
 
   const totalCards = posts.length;
-  const viewBoxHeight = Math.max(totalCards * 240 + 100, 400);
 
   return (
-    <section className="relative py-16 md:py-24">
-      <svg
-        className="pointer-events-none absolute inset-0 h-full w-full"
-        viewBox={`0 0 40 ${viewBoxHeight}`}
-        preserveAspectRatio="xMidYMid slice"
-        aria-hidden="true"
-      >
-        <defs>
-          <linearGradient id="timeline-gold" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#d3b33f" stopOpacity="0.12" />
-            <stop offset="50%" stopColor="#d3b33f" stopOpacity="0.65" />
-            <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.12" />
-          </linearGradient>
-          <filter id="glow-sm">
-            <feGaussianBlur stdDeviation="1.8" result="blur" />
-            <feMerge>
-              <feMergeNode in="blur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
-
-        <line x1="38" y1="0" x2="38" y2={viewBoxHeight} stroke="url(#timeline-gold)" strokeWidth="0.6" />
-
-        <line
-          x1="38"
-          y1="0"
-          x2="38"
-          y2={lineProgress * viewBoxHeight}
-          stroke="#d3b33f"
-          strokeWidth="0.6"
-          strokeDasharray="2 3"
-          opacity="0.5"
-        />
-
-        {hoveredIndex !== null && (
-          <line
-            x1="38"
-            y1="0"
-            x2="38"
-            y2={lineProgress * viewBoxHeight}
-            stroke="#d3b33f"
-            strokeWidth="1.4"
-            opacity="0.2"
-          />
-        )}
-
-        {posts.map((_, i) => {
-          const y = 80 + i * 240;
-          return (
-            <g key={i}>
-              <circle cx="38" cy={y} r="3.5" fill="#f7f3eb" stroke="#d3b33f" strokeWidth="0.8" />
-              {hoveredIndex === i && (
-                <circle cx="38" cy={y} r="4.5" fill="#d3b33f" filter="url(#glow-sm)">
-                  <animate attributeName="r" values="4.5;7;4.5" dur="1.2s" repeatCount="indefinite" />
-                  <animate attributeName="opacity" values="1;0.5;1" dur="1.2s" repeatCount="indefinite" />
-                </circle>
-              )}
-            </g>
-          );
-        })}
-
-        <circle
-          cx="38"
-          cy={lineProgress * viewBoxHeight}
-          r="4.5"
-          fill="#d3b33f"
-          filter="url(#glow-sm)"
+    <section ref={sectionRef} className="relative py-12 md:py-20">
+      <div className="relative">
+        <svg
+          className="pointer-events-none absolute left-3 top-0 h-full w-6 md:left-5 md:w-8"
+          viewBox="0 0 32 1000"
+          preserveAspectRatio="none"
+          aria-hidden="true"
         >
-          <animate attributeName="r" values="4;6.5;4" dur="2s" repeatCount="indefinite" />
-        </circle>
-      </svg>
+          <defs>
+            <linearGradient id="timeline-gold" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#d3b33f" stopOpacity="0.1" />
+              <stop offset="50%" stopColor="#d3b33f" stopOpacity="0.5" />
+              <stop offset="100%" stopColor="#d3b33f" stopOpacity="0.1" />
+            </linearGradient>
+          </defs>
+          <line x1="16" y1="0" x2="16" y2="1000" stroke="url(#timeline-gold)" strokeWidth="1.5" />
+          <line
+            x1="16"
+            y1="0"
+            x2="16"
+            y2={lineProgress * 1000}
+            stroke="#d3b33f"
+            strokeWidth="2"
+            strokeDasharray="4 4"
+            opacity="0.6"
+          />
+        </svg>
 
-      <div className="relative space-y-5 md:space-y-6">
-        {posts.map((post, index) => (
-          <div
-            key={post.id}
-            className="md:ml-[8%] md:mr-[12%]"
-            onMouseEnter={() => handleCardHover(index)}
-            onMouseLeave={handleCardLeave}
-          >
-            <LinkedInPostCard post={post} index={index} />
-          </div>
-        ))}
+        <div className="space-y-6 md:space-y-8">
+          {posts.map((post, index) => {
+            const isLeft = index % 2 === 0;
+            return (
+              <div
+                key={post.id}
+                className={`relative pl-10 md:pl-12 ${isLeft ? "md:pr-[55%]" : "md:pl-[55%]"}`}
+              >
+                <div
+                  className="absolute left-3 top-6 h-3 w-3 -translate-x-1/2 rounded-full border-2 border-[#d3b33f] bg-white md:left-5"
+                  aria-hidden="true"
+                />
+                <LinkedInPostCard post={post} index={index} />
+              </div>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
 }
-
 export function PortfolioShell({ githubRepos }: { githubRepos: GitHubRepoSummary[] }) {
   const [activeSection, setActiveSection] = useState("home");
   const [isMenuOpen, setIsMenuOpen] = useState(false);

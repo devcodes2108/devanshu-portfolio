@@ -64,7 +64,7 @@ function FerrisWheelSlideshow({
   const handleTouchEnd = () => {
     const diff = touchStartX.current - touchEndX.current;
     if (Math.abs(diff) > 50) {
-      diff > 0 ? advance() : retreat();
+      diff > 0 ? retreat() : advance();
     }
     touchStartX.current = 0;
     touchEndX.current = 0;
@@ -74,96 +74,42 @@ function FerrisWheelSlideshow({
 
   if (count === 1) {
     return (
-      <div className="relative h-48 w-full overflow-hidden rounded border border-black/8 bg-black/[0.02]">
-        <Image src={images[0]} alt={alt} fill className="object-cover" sizes="(max-width: 768px) 100vw, 50vw" loading="lazy" />
+      <div className="relative h-40 w-full overflow-hidden rounded border border-black/8 bg-black/[0.02]">
+        <Image src={images[0]} alt={alt} fill className="object-contain" sizes="(max-width: 768px) 100vw, 50vw" loading="lazy" />
       </div>
     );
   }
 
-  const getCardStyle = (index: number): React.CSSProperties => {
-    const offset = index - currentIndex;
-    const n =
-      offset === 0
-        ? 0
-        : offset > 0
-          ? offset === 1
-            ? 1
-            : 2
-          : offset === -1
-            ? -1
-            : -2;
-
-    if (n === 0) {
-      return {
-        transform: "translateX(0) translateY(0) scale(1) rotate(0deg)",
-        zIndex: 3,
-        opacity: 1,
-        filter: "brightness(1)",
-        boxShadow: "0 14px 32px rgba(18,18,18,0.14)",
-      };
-    } else if (n === 1 || (currentIndex === count - 1 && index === 0)) {
-      return {
-        transform: "translateX(28%) translateY(-32%) scale(0.68) rotate(4deg)",
-        zIndex: 2,
-        opacity: 0.65,
-        filter: "brightness(0.9)",
-        boxShadow: "0 8px 18px rgba(18,18,18,0.08)",
-      };
-    } else if (n === -1 || (currentIndex === 0 && index === count - 1)) {
-      return {
-        transform: "translateX(-28%) translateY(32%) scale(0.68) rotate(-4deg)",
-        zIndex: 2,
-        opacity: 0.65,
-        filter: "brightness(0.9)",
-        boxShadow: "0 8px 18px rgba(18,18,18,0.08)",
-      };
-    } else {
-      return {
-        transform: "translateX(0) translateY(0) scale(0.5) rotate(0deg)",
-        zIndex: 0,
-        opacity: 0,
-        filter: "brightness(0.8)",
-        boxShadow: "0 4px 10px rgba(18,18,18,0.04)",
-      };
-    }
-  };
-
   return (
     <div
-      className="relative h-52 w-full overflow-hidden"
+      className="relative h-40 w-full overflow-hidden"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative mx-auto h-full w-full max-w-[200px]">
+      <div className="flex h-full w-full items-center justify-center gap-3">
         {images.map((src, i) => {
-          const style = getCardStyle(i);
+          const isActive = i === currentIndex;
           return (
             <div
               key={i}
-              className="absolute inset-0 flex items-center justify-center transition-all duration-700 ease-out"
+              className="relative h-28 w-24 flex-shrink-0 overflow-hidden rounded border border-black/10 bg-white transition-all duration-500 ease-out md:h-32 md:w-28"
               style={{
-                transform: style.transform,
-                zIndex: style.zIndex,
-                opacity: style.opacity,
-                filter: style.filter,
-                boxShadow: style.boxShadow,
-                willChange: "transform, opacity",
-                pointerEvents: "none",
+                opacity: isActive ? 1 : 0.45,
+                transform: isActive ? "scale(1)" : "scale(0.92)",
+                zIndex: isActive ? 2 : 1,
               }}
             >
-              <div className="relative h-[120px] w-[88px] overflow-hidden rounded border border-black/10 bg-white">
-                <Image
-                  src={src}
-                  alt={`${alt} - image ${i + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="120px"
-                  loading="lazy"
-                />
-              </div>
+              <Image
+                src={src}
+                alt={`${alt} - image ${i + 1}`}
+                fill
+                className="object-contain"
+                sizes="160px"
+                loading="lazy"
+              />
             </div>
           );
         })}
@@ -224,7 +170,7 @@ export function LinkedInPostCard({
 
   return (
     <article
-      className="group relative rounded-lg border border-black/8 bg-white p-5 md:p-6 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-black/15 hover:shadow-[0_8px_24px_rgba(18,18,18,0.07)]"
+      className="group relative rounded-lg border border-black/8 bg-white p-4 transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-black/15 hover:shadow-[0_8px_24px_rgba(18,18,18,0.07)] md:p-5"
       onMouseEnter={onHover}
     >
       <div className="flex items-center gap-3">
@@ -238,9 +184,9 @@ export function LinkedInPostCard({
         </div>
       </div>
 
-      <h3 className="mt-4 text-xl font-bold tracking-[-0.05em] text-black">{post.title}</h3>
+      <h3 className="mt-3 text-base font-bold tracking-[-0.05em] text-black md:text-lg">{post.title}</h3>
 
-      <div className="mt-2 text-sm leading-7 text-black/65">
+      <div className="mt-1.5 text-sm leading-7 text-black/65">
         <p className={isExpanded ? "" : "line-clamp-2"}>{post.text}</p>
         {needsTruncation && (
           <button
@@ -254,12 +200,12 @@ export function LinkedInPostCard({
       </div>
 
       {hasImages && (
-        <div className="mt-4">
+        <div className="mt-3">
           <FerrisWheelSlideshow images={post.images} alt={post.imageAlt} />
         </div>
       )}
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-1.5">
         {post.hashtags.slice(0, 5).map((tag) => (
           <span
             key={tag}
@@ -270,12 +216,12 @@ export function LinkedInPostCard({
         ))}
       </div>
 
-      <div className="mt-5 flex items-center justify-between border-t border-black/5 pt-4">
+      <div className="mt-4 flex items-center justify-between border-t border-black/5 pt-3">
         <a
           href={post.url}
           target="_blank"
           rel="noreferrer"
-          className="social-button social-button-light inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white px-3.5 py-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-black"
+          className="social-button social-button-light inline-flex items-center justify-center gap-2 rounded-full border border-black/10 bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-black"
         >
           <LinkedInIcon className="h-3.5 w-3.5" />
           View on LinkedIn
