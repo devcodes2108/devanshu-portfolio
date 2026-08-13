@@ -1,0 +1,100 @@
+name: LinkedIn Data Sync
+
+on:
+  schedule:
+    # Run every 12 hours
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+    # Allow manual trigger with optional JSON file upload
+    inputs:
+      json_file_url:
+        description: "URL to a JSON file containing LinkedIn posts"
+        required: false
+        type: string
+      dry_run:
+        description: "Run without committing changes"
+        required: false
+        default: "false"
+        type: boolean
+
+permissions:
+  contents: write
+
+jobs:
+  sync-linkedin:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify TypeScript compiles
+        run: npx tsc --noEmit
+
+      - name: Download LinkedIn JSON (if URL provided)
+        if: ${{ inputs.json_file_url != '' }}
+        run: |
+          curl -L "${{ inputs.json_file_url }}" -o /tmp/linkedin-posts.json
+          echo "Downloaded LinkedIn posts JSON"
+          ls -la /tmp/linkedin-posts.json
+        env:
+          JSON_URL: ${{ inputs.json_file_url }}
+
+      - name: Run sync script
+        run: |
+          if [ -f /tmp/linkedin-posts.json ]; then
+            python scripts/sync-linkedin.py /tmp/linkedin-posts.json
+          else
+            echo "No new data provided. Running verification only."
+            python scripts/sync-linkedin.py --verify || true
+          fi
+        env:
+          DRY_RUN: ${{ inputs.dry_run }}
+
+      - name: Check for changes
+        id: changes
+        run: |
+          if git diff --quiet data/linkedin-import.ts; then
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "No changes detected in LinkedIn data."
+          else
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "Changes detected in LinkedIn data."
+          fi
+
+      - name: Commit and push changes
+        if: ${{ steps.changes.outputs.changed == 'true' && inputs.dry_run != true }}
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add data/linkedin-import.ts
+          git commit -m "chore: sync LinkedIn posts from automated workflow
+
+Auto-synced LinkedIn posts via GitHub Actions.
+Source: agent-reach
+Excludes: certificates, videos, documentation
+Includes: technical, career, event, learning posts"
+          git push origin main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Report sync status
+        run: |
+          echo "=== LinkedIn Sync Status ==="
+          if [ "${{ steps.changes.outputs.changed }}" = "true" ]; then
+            echo "Status: UPDATED"
+            echo "New posts were synced and committed."
+          else
+            echo "Status: NO CHANGES"
+            echo "No new posts detected."
+          fi
+          echo "==========================="
